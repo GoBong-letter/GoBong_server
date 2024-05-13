@@ -10,7 +10,7 @@ class Card extends Sequelize.Model {
                 allowNull: false,
             },
             name: {
-                type: DataTypes.STRING(20),
+                type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
             }
