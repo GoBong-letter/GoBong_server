@@ -48,6 +48,7 @@ class User extends Sequelize.Model {
             foreignKey: "user_id",
             sourceKey: "id",
         });
+        db.User.hasMany(db.Letter, {foreignKey: 'user_id', sourceKey: 'id'})
     }
 }
 

@@ -6,10 +6,18 @@ class UserCtg extends Sequelize.Model {
             user_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+                references:{
+                    model : 'users',
+                    key : 'id'
+                }
             },
             ctg_id: {
                 type: DataTypes.INTEGER,
                 allowNull: false,
+                references:{
+                    model : 'category',
+                    key : 'id'
+                }
             }
         }, {
             sequelize,
