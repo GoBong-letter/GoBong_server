@@ -1,6 +1,6 @@
-const { UserCtg, Category } = require('../models');
+const { UserCtg, LetterCtg, Category } = require('../models');
 
-async function getCategoryId(b_ctg, name, user_id) {
+async function getCategoryId(b_ctg, name, id, id_name, table) {
     try {
       const categoryId = await Category.findAll({
         attributes: ['id'], // 선택할 속성 지정
@@ -10,13 +10,13 @@ async function getCategoryId(b_ctg, name, user_id) {
         }
       });
   
-      await UserCtg.create({
-        user_id,
+      await table.create({
+        [id_name]: id,
         ctg_id: categoryId[0].dataValues.id
       })
+
     } catch (error) {
       console.error('Error:', error);
-      throw error;
     }
 }
 
