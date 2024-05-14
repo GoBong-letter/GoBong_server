@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-class Card extends Sequelize.Model {
+class Category extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
             id: {
@@ -9,25 +9,33 @@ class Card extends Sequelize.Model {
                 primaryKey: true,
                 allowNull: false,
             },
+            b_ctg: {
+                type: DataTypes.ENUM,
+                values: ['외면', '내면', '관심사', '취미', '좋아하는', '싫어하는']
+            },
             name: {
                 type: DataTypes.STRING,
                 allowNull: false,
-                unique: true,
+                unique: true
             }
         }, {
             sequelize,
             timestamps: false,
             underscored: false,
-            modelName: 'Card',
-            tableName: 'cards',
+            modelName: 'Category',
+            tableName: 'category',
             paranoid: false,
             charset: 'utf8',
             collate: 'utf8_general_ci',
         });
     }
-    // static associate(db) {
-    //     //테이블과 테이블의 관계를 설정
-    // }
+    static associate(db) {
+        db.Category.belongsToMany(db.User, {
+            through: 'UserCtg',
+            foreignKey: "ctg_id",
+            sourceKey: "id",
+        });
+    }
 }
 
-module.exports = Card;
+module.exports = Category;
