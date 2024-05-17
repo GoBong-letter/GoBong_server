@@ -1,5 +1,8 @@
-const { Letter, LetterCtg } = require('../models');
+const { Letter, LetterCtg, LetterReply } = require('../models');
+const { Op, where } = require('sequelize');
+
 const getCategoryId = require('../helper/getCategoryId');
+const getRandomIndex = require('../helper/getRandomIndex');
 
 // 편지 작성
 exports.writePostMid = async (req, res) => {
@@ -16,7 +19,6 @@ exports.writePostMid = async (req, res) => {
 
         // 카테고리 저장
         const letter_id = createLetter.dataValues.id;
-        console.log(letter_id + "LETTER_ID!!!!!");
         Object.keys(category_json).forEach(b_ctg => {
             category_json[b_ctg].forEach(name => {
                 getCategoryId(b_ctg, name, letter_id, 'letter_id', LetterCtg);
@@ -63,5 +65,89 @@ exports.letterGetMid = async (req, res) => {
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: '서버 오류로 편지 조회 실패'})
+    }
+}
+
+// 랜덤으로 5개의 편지 받기
+exports.randomLetterGetMid = async (req, res) => {
+    try{
+        let user_id = req.params.user_id;
+
+        // 내가 작성한 편지를 제외하여 조회하기
+        const letters = await Letter.findAll({
+            where:{
+                user_id: { [Op.ne]: user_id }
+            }
+        })
+
+        // 랜덤으로 다섯 개의 편지 반환
+        let returnLetters = [];
+        const randomArr = getRandomIndex(letters.length);
+        randomArr.forEach(index => {
+            returnLetters.push(letters[index]);
+        })
+
+        res.json(returnLetters);
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ error: '서버 오류로 랜덤 편지 조회 실패'})
+    }
+}
+
+// 편지 받기 (랜덤에서 뽑기)
+exports.receiveLetterPostMid = async (req, res) => {
+    try{
+        const result = await LetterReply.create({
+            ...req.body
+        });
+
+        return res.status(200).json({ message: '편지 받기 성공' });
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ error: '서버 오류로 편지 받기 실패'})
+    }
+}
+
+// 받은 편지 조회하기
+exports.inboxGetMid = async (req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        const letterReplies = await LetterReply.findAll({
+            attributes: ['letter_id'],
+            where: { 
+                user_id
+            },
+        });
+
+        const letterIds = letterReplies.map(reply => reply.letter_id);
+
+        const letters = await Letter.findAll({
+            where: {
+              id: letterIds,
+            },
+          });
+
+        res.json(letters);
+    }catch(err){
+        console.error(err)
+        return res.status(500).json({ error: "서버 오류로 편지 조회 실패" })
+    }
+}
+
+// 편지 답장하기
+exports.writeReplyPostMid = async (req, res) => {
+    try{
+        const { letter_id, content } = req.body;
+        const letter = await LetterReply.update({
+            content
+        }, {
+            where: {letter_id: letter_id}
+        })
+
+        return res.status(200).json({ message: '답장 작성 성고' });
+    }catch(err){    
+        console.error(err)
+        res.status(500).json({ error: "서버 오류로 편지 답장 실패" })
     }
 }
