@@ -61,7 +61,22 @@ exports.letterGetMid = async (req, res) => {
             }
         })
 
-        res.json(letter)
+        const reply = await LetterReply.findOne({
+            where:{
+                letter_id: letter_id
+            }
+        })
+ 
+        let response = {...letter.dataValues}
+        
+        // response 객체에 답장 추가
+        if(reply){
+            response.reply = reply.dataValues.content
+        }else{
+            response.reply = null
+        }
+
+        res.json(response)
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: '서버 오류로 편지 조회 실패'})
@@ -151,3 +166,5 @@ exports.writeReplyPostMid = async (req, res) => {
         res.status(500).json({ error: "서버 오류로 편지 답장 실패" })
     }
 }
+
+// 답장한 편지 조회하기
