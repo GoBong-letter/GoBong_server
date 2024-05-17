@@ -5,6 +5,9 @@ const Category = require('./category');
 const UserCtg = require('./user_ctg')
 const Letter = require('./letters');
 const LetterCtg = require('./letter_ctg');
+const LetterReply = require("./letter_reply");
+const Community = require("./community");
+const CommunityComment = require("./community_comments");
 
 const env = process.env.NODE_ENV || 'development';
 const config = require('../config/config')[env];
@@ -29,6 +32,9 @@ db.Category = Category;
 db.UserCtg = UserCtg;
 db.Letter = Letter;
 db.LetterCtg = LetterCtg
+db.LetterReply = LetterReply;
+db.Community = Community;
+db.CommunityComment = CommunityComment;
 
 User.init(sequelize);
 Card.init(sequelize);
@@ -36,6 +42,9 @@ Category.init(sequelize);
 UserCtg.init(sequelize);
 Letter.init(sequelize);
 LetterCtg.init(sequelize);
+LetterReply.init(sequelize);
+Community.init(sequelize);Community
+CommunityComment.init(sequelize);
 
 db.User.belongsToMany(db.Category, {
     through: 'UserCtg',
