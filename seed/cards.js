@@ -5,9 +5,13 @@ async function seedCards() {
     const existingCards = await Card.findAll();
     if(existingCards.length === 0){
       let card_name = ['rice', 'bean', 'egg_soy', 'emelet', 'ham_mayo', 'salmon', 'bibim']
+      let count = [1, 10, 30, 50, 100, 200, 500]
 
-      let cards = card_name.map(v => {
-        return {name: v}
+      let cards = card_name.map((v, index) => {
+        return {
+          name: v,
+          count: count[index]
+        }
       })
 
       await Card.bulkCreate(cards);
