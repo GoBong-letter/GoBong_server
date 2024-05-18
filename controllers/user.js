@@ -108,25 +108,6 @@ exports.userInfoGetMind = async (req, res) => {
     })
     let response = {...user.dataValues};
 
-    // 편지 개수 조회
-    let letters = await Letter.count({
-      where: {
-        user_id: user_id
-      }
-    })
-
-    // 받을 수 있는 편지 조회
-    let cards = await Card.findAll({
-      attributes: ['name'],
-      where:{
-        count: {[Op.lte]: letters}
-      },
-      order: [ ['count', 'ASC'] ]
-    })
-
-    let myCards = cards.map(card => card.dataValues.name);
-    response['card'] = myCards;
-
     // 나의 카테고리 id 조회
     let myCategory = {'외면': [], '내면': [], '관심사': [], '취미': [], '좋아하는': [], '싫어하는': []};
     const ctgIds = await UserCtg.findAll({
@@ -155,6 +136,35 @@ exports.userInfoGetMind = async (req, res) => {
   }catch(err){
     console.error(err);
     res.status(500).json({ error: "서버 오류로 사용자 정보 조회 실패" })
+  }
+}
+
+// 나의 카드 조회
+exports.cardsGetMid = async (req, res) => {
+  try{
+    const user_id = req.params.user_id;
+
+    // 편지 개수 조회
+    let letters = await Letter.count({
+      where: {
+        user_id: user_id
+      }
+    })
+
+    // 받을 수 있는 편지 조회
+    let cards = await Card.findAll({
+      attributes: ['name'],
+      where:{
+        count: {[Op.lte]: letters}
+      },
+      order: [ ['count', 'ASC'] ]
+    })
+
+    let myCards = cards.map(card => card.dataValues.name);
+    res.json(myCards);
+  }catch(err){
+    console.error(err);
+    return res.status(500).json({ error: '서버 오류로 카드 조회 실패' })
   }
 }
 
