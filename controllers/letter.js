@@ -164,7 +164,7 @@ exports.writeReplyPostMid = async (req, res) => {
         return res.status(200).json({ message: '답장 작성 성고' });
     }catch(err){    
         console.error(err)
-        res.status(500).json({ error: "서버 오류로 편지 답장 실패" })
+        return res.status(500).json({ error: "서버 오류로 편지 답장 실패" })
     }
 }
 
@@ -192,7 +192,7 @@ exports.sentLetterGetMid = async (req, res) => {
         res.json(letters);
     }catch(err){
         console.error(err);
-        res.status(500).json({ error: "서버 오류로 답장한 편지 조회 실패" });
+        return res.status(500).json({ error: "서버 오류로 답장한 편지 조회 실패" });
     }
 }
 
@@ -220,7 +220,7 @@ exports.receivedLetterGetMid = async (req, res) => {
         res.json(letterReplies);
     }catch(err){
         console.error(err);
-        res.status(500).json({ error : "서버 오류로 답장 받은 편지 조회 실패" })
+        return res.status(500).json({ error : "서버 오류로 답장 받은 편지 조회 실패" })
     }
 }
 
@@ -246,7 +246,7 @@ exports.weekLettersGetMid = async (req, res) => {
         res.json(response);
     }catch(err){
         console.error(err);
-        res.status(500).json({ error: "서버 오류로 이번주에 작성한 편지 조회 실패" });
+        return res.status(500).json({ error: "서버 오류로 이번주에 작성한 편지 조회 실패" });
     }
 }
 
@@ -279,7 +279,7 @@ exports.weekAvgLettersGetMid = async (req, res) => {
         res.json(response);
     }catch(err){
         console.error(err);
-        res.status(500).json({ error: "서버 오류로 편지 평균 조회 실패"})
+        return res.status(500).json({ error: "서버 오류로 편지 평균 조회 실패"})
     }
 }
 
@@ -309,6 +309,6 @@ exports.categoryGetMid = async(req, res) => {
         res.json(name)
     }catch(err){
         console.error(err);
-        res.status(500).json({ error: "서버 오류로 카테고리 조회 실패" })
+        return res.status(500).json({ error: "서버 오류로 카테고리 조회 실패" })
     }
 }
