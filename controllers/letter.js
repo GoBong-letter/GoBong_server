@@ -1,5 +1,6 @@
-const { Letter, LetterCtg, LetterReply } = require('../models');
+const { Letter, LetterCtg, LetterReply, User, Category } = require('../models');
 const { Op, where } = require('sequelize');
+const { startOfWeek, endOfWeek, differenceInWeeks } = require('date-fns');
 
 const getCategoryId = require('../helper/getCategoryId');
 const getRandomIndex = require('../helper/getRandomIndex');
@@ -168,3 +169,146 @@ exports.writeReplyPostMid = async (req, res) => {
 }
 
 // 답장한 편지 조회하기
+exports.sentLetterGetMid = async (req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        const letterReplies = await LetterReply.findAll({
+            attributes: ['letter_id'],
+            where: { 
+                user_id,
+                content: { [Op.ne]: null }
+            },
+        });
+
+        const letterIds = letterReplies.map(reply => reply.letter_id);
+
+        const letters = await Letter.findAll({
+            where: {
+              id: letterIds
+            },
+          });
+
+        res.json(letters);
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 답장한 편지 조회 실패" });
+    }
+}
+
+// 답장 받은 편지 조회하기
+exports.receivedLetterGetMid = async (req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        const letters = await Letter.findAll({
+            attributes: ['id'],
+            where: {
+                user_id: user_id
+            }
+        })
+
+        const letterIds = letters.map(letter => letter.id);
+
+        const letterReplies = await LetterReply.findAll({
+            where:{
+                letter_id: letterIds,
+                content: { [Op.ne]: null }
+            }
+        })
+
+        res.json(letterReplies);
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error : "서버 오류로 답장 받은 편지 조회 실패" })
+    }
+}
+
+// 이번주에 작성한 편지 개수 조회
+exports.weekLettersGetMid = async (req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        // 이번주의 시작과 끝 날짜 계산
+        const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 });
+
+        // 이번주에 작성한 편지 개수 조회
+        const letters = await Letter.count({
+            where:{
+                user_id: user_id,
+                createdAt: { [Op.between]: [startOfThisWeek, endOfThisWeek] }
+            }
+        })
+
+        const response = { "letters": letters};
+
+        res.json(response);
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 이번주에 작성한 편지 조회 실패" });
+    }
+}
+
+// 주 별 평균 편지 작성 개수 조회
+exports.weekAvgLettersGetMid = async (req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        const user = await User.findOne({
+            attributes: ['createdAt'],
+            where: {
+                id: user_id
+            }
+        })
+
+        // 계정 생성 후 몇 주 지났는지 구하기
+        const now = new Date();
+        const weeksSinceCreation = differenceInWeeks(now, user.dataValues.createdAt) + 1;
+        console.log(weeksSinceCreation, "createdAt!!!!!!!!");
+
+        const letters = await Letter.count({
+            where: {
+                user_id: user_id,
+            }
+        })
+
+        const avg = Math.round(letters / weeksSinceCreation);
+        const response = { "letters_avg" : avg };
+
+        res.json(response);
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 편지 평균 조회 실패"})
+    }
+}
+
+// 편지 카테고리 조회하기
+exports.categoryGetMid = async(req, res) => {
+    try{
+        const letter_id = req.params.letter_id;
+
+        const letters = await LetterCtg.findAll({
+            attributes: ['ctg_id'],
+            where:{
+                letter_id: letter_id
+            }
+        })
+
+        const ctgIds = letters.map(letter => letter.ctg_id);
+
+        const ctgs = await Category.findAll({
+            attributes: ['name'],
+            where: {
+                id: ctgIds
+            }
+        })
+
+        const name = ctgs.map(ctg => ctg.name);
+
+        res.json(name)
+    }catch(err){
+        console.error(err);
+        res.status(500).json({ error: "서버 오류로 카테고리 조회 실패" })
+    }
+}
