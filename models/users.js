@@ -33,7 +33,9 @@ class User extends Sequelize.Model {
             }
         }, {
             sequelize,
-            timestamps: false,
+            timestamps: true,
+            createdAt: true,
+            updatedAt: false,
             underscored: false,
             modelName: 'User',
             tableName: 'users',

@@ -13,6 +13,11 @@ class Card extends Sequelize.Model {
                 type: DataTypes.STRING,
                 allowNull: false,
                 unique: true,
+            },
+            count:{
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                unique: true,
             }
         }, {
             sequelize,

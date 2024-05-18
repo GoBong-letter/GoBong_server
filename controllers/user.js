@@ -1,4 +1,5 @@
-const { User, UserCtg } = require('../models');
+const { User, UserCtg, Card, Letter, Category } = require('../models');
+const { Op, where } = require('sequelize');
 const getCategoryId = require('../helper/getCategoryId');
 const crypto = require('crypto');
 
@@ -94,6 +95,79 @@ exports.loginPostMid = async (req, res) => {
   }
 };
 
+// 로그인 후 사용자 정보 조회
+exports.userInfoGetMind = async (req, res) => {
+  try{
+    const user_id = req.params.user_id;
+
+    const user = await User.findOne({
+      attributes: ['nickname', 'image'],
+      where: {
+        id: user_id
+      }
+    })
+    let response = {...user.dataValues};
+
+    // 나의 카테고리 id 조회
+    let myCategory = {'외면': [], '내면': [], '관심사': [], '취미': [], '좋아하는': [], '싫어하는': []};
+    const ctgIds = await UserCtg.findAll({
+      attributes: ['ctg_id'],
+      where:{
+        user_id: user_id
+      }
+    })
+
+    // 카테고리 이름 조회
+    let ctgId = ctgIds.map(ctg => ctg.ctg_id);
+    const ctgNames = await Category.findAll({
+      attributes: ['b_ctg', 'name'],
+      where: {
+        id: ctgId
+      }
+    })
+
+    ctgNames.forEach(ctg => {
+      myCategory[ctg.b_ctg].push(ctg.name)
+    })
+
+    response['category'] = myCategory;
+
+    res.json(response);
+  }catch(err){
+    console.error(err);
+    res.status(500).json({ error: "서버 오류로 사용자 정보 조회 실패" })
+  }
+}
+
+// 나의 카드 조회
+exports.cardsGetMid = async (req, res) => {
+  try{
+    const user_id = req.params.user_id;
+
+    // 편지 개수 조회
+    let letters = await Letter.count({
+      where: {
+        user_id: user_id
+      }
+    })
+
+    // 받을 수 있는 편지 조회
+    let cards = await Card.findAll({
+      attributes: ['name'],
+      where:{
+        count: {[Op.lte]: letters}
+      },
+      order: [ ['count', 'ASC'] ]
+    })
+
+    let myCards = cards.map(card => card.dataValues.name);
+    res.json(myCards);
+  }catch(err){
+    console.error(err);
+    return res.status(500).json({ error: '서버 오류로 카드 조회 실패' })
+  }
+}
+
 // 프로필 사진 수정
 exports.imagePatchMid = async (req, res) => {
   try {
@@ -142,3 +216,29 @@ exports.nicknamePatchMid = async (req, res) => {
     return res.status(500).json({ error: '닉네임 수정 중 실패' });
   }
 };
+
+// 카테고리 수정
+exports.categoryPatchMid = async (req, res) => {
+  try{
+    const { user_id, category } = req.body;
+
+    await UserCtg.destroy({
+      where: { 
+        user_id: user_id 
+      },
+    });
+
+    const category_json = JSON.parse(category.replace(/'/g, '\"'));
+    // 카테고리 저장
+    Object.keys(category_json).forEach(b_ctg => {
+      category_json[b_ctg].forEach(name => {
+          getCategoryId(b_ctg, name, user_id, 'user_id', UserCtg);
+      })
+    })
+
+    return res.status(200).json({ message: '카테고리 성공적으로 수정'});
+  }catch(err){
+    console.error(err);
+    return res.status(500).json({ error: '서버 오류로 카테고리 수정 중 실패'}) 
+  }
+}

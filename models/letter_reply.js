@@ -24,15 +24,11 @@ class LetterReply extends Sequelize.Model {
             content: {
                 type: DataTypes.TEXT,
                 allowNull: true
-            },
-            date: {
-                type: DataTypes.DATE,
-                allowNull: true,
-                defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
             }
         }, {
             sequelize,
             timestamps: false,
+            createdAt: true,
             underscored: false,
             modelName: 'LetterReply',
             tableName: 'letter_reply',
