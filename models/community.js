@@ -24,15 +24,12 @@ class Community extends Sequelize.Model {
             content: {
                 type: DataTypes.TEXT,
                 allowNull: false
-            },
-            date:{
-                type: DataTypes.DATE,
-                allowNull: true,
-                defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
             }
         }, {
             sequelize,
             timestamps: false,
+            createdAt: true,
+            updatedAt: true,
             underscored: false,
             modelName: 'Community',
             tableName: 'community',

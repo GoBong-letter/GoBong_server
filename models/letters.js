@@ -27,15 +27,12 @@ class Letter extends Sequelize.Model {
             content: {
                 type: DataTypes.TEXT,
                 allowNull: false
-            },
-            date: {
-                type: DataTypes.DATE,
-                allowNull: true,
-                defaultValue: Sequelize.Sequelize.literal('CURRENT_TIMESTAMP')
             }
         }, {
             sequelize,
-            timestamps: false,
+            timestamps: true,
+            createdAt: true,
+            updatedAt: false,
             underscored: false,
             modelName: 'Letter',
             tableName: 'letters',
