@@ -70,4 +70,10 @@ db.Category.belongsToMany(db.Letter, {
     sourceKey: "id",
 });
 
+db.Community.hasMany(db.CommunityComment, { foreignKey: 'post_id', sourceKey: 'id', as: 'comments' });
+db.CommunityComment.belongsTo(db.Community, { foreignKey: 'post_id', targetKey: 'id' });
+
+db.CommunityComment.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'id', as: 'user' });
+db.User.hasMany(db.CommunityComment, { foreignKey: 'user_id', sourceKey: 'id' });
+
 module.exports = db;
