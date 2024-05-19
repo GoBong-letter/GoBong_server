@@ -27,7 +27,7 @@ class Community extends Sequelize.Model {
             }
         }, {
             sequelize,
-            timestamps: false,
+            timestamps: true,
             createdAt: true,
             updatedAt: true,
             underscored: false,
