@@ -1,6 +1,6 @@
 const { Sequelize, DataTypes } = require('sequelize');
 
-class Category extends Sequelize.Model {
+class SubCategory extends Sequelize.Model {
     static init(sequelize) {
         return super.init({
             id: {
@@ -9,9 +9,13 @@ class Category extends Sequelize.Model {
                 primaryKey: true,
                 allowNull: false,
             },
-            b_ctg: {
-                type: DataTypes.ENUM,
-                values: ['외면', '내면', '관심사', '취미', '좋아하는', '싫어하는']
+            category_id: {
+                type: DataTypes.INTEGER,
+                allowNull: false,
+                references:{
+                    model : 'categories',
+                    key : 'id'
+                }
             },
             name: {
                 type: DataTypes.STRING,
@@ -22,20 +26,14 @@ class Category extends Sequelize.Model {
             sequelize,
             timestamps: false,
             underscored: false,
-            modelName: 'Category',
-            tableName: 'category',
+            modelName: 'SubCategory',
+            tableName: 'sub_categories',
             paranoid: false,
             charset: 'utf8',
             collate: 'utf8_general_ci',
         });
     }
-    static associate(db) {
-        db.Category.belongsToMany(db.User, {
-            through: 'UserCtg',
-            foreignKey: "ctg_id",
-            sourceKey: "id",
-        });
-    }
+    static associate(db) {}
 }
 
-module.exports = Category;
+module.exports = SubCategory;
