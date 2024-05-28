@@ -3,8 +3,8 @@ const app = express();
 
 const {sequelize} = require('./models');
 const seedCards = require('./seed/cards');
-const seedCategory = require('./seed/category');
-
+const seedCategory = require('./seed/categories');
+const seedSubCategory = require('./seed/sub_categories')
 
 app.set('port', process.env.PORT || 3000); //포트 설정
 
@@ -13,6 +13,7 @@ sequelize.sync({force: false})
     console.log("DB Connected Success");
     seedCards();
     seedCategory();
+    seedSubCategory();
 })
 .catch((err)=> {
     console.error(err);
