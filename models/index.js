@@ -49,19 +49,15 @@ LetterReply.init(sequelize);
 Community.init(sequelize);
 CommunityComment.init(sequelize);
 
-// db.User.belongsToMany(db.Category, {
-//     through: 'UserCtg',
-//     foreignKey: "user_id",
-//     sourceKey: "id",
-// });
+Category.hasMany(SubCategory, { foreignKey: 'category_id' });
+SubCategory.belongsTo(Category, { foreignKey: 'category_id' });
 
-// db.Category.belongsToMany(db.User, {
-//     through: 'UserCtg',
-//     foreignKey: "category_id",
-//     sourceKey: "id",
-// });
+User.belongsToMany(Category, { through: UserCtg, foreignKey: 'user_id' });
+Category.belongsToMany(User, { through: UserCtg, foreignKey: 'category_id' });
 
-// db.SubCategory.belongsToMany(db.)
+UserCtg.belongsTo(User, { foreignKey: 'user_id' });
+UserCtg.belongsTo(Category, { foreignKey: 'category_id' });
+UserCtg.belongsTo(SubCategory, { foreignKey: 'subcategory_id' });
 
 // db.Letter.belongsToMany(db.Category, {
 //     through: 'LetterCtg',
