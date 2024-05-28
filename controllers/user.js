@@ -1,4 +1,4 @@
-const { User, UserCtg, Card, Letter, Category } = require('../models');
+const { User, UserCtg, Card, Letter, Category, SubCategory } = require('../models');
 const { Op, where } = require('sequelize');
 const getCategoryId = require('../helper/getCategoryId');
 const crypto = require('crypto');
@@ -108,29 +108,29 @@ exports.userInfoGetMind = async (req, res) => {
     })
     let response = {...user.dataValues};
 
+    let category = { '외모': [], '성격': [], '취미': [], '색': [], 'MBTI': [], '기타': []};
+
     // 나의 카테고리 id 조회
-    let myCategory = {'외면': [], '내면': [], '관심사': [], '취미': [], '좋아하는': [], '싫어하는': []};
-    const ctgIds = await UserCtg.findAll({
-      attributes: ['ctg_id'],
-      where:{
-        user_id: user_id
-      }
-    })
+    const userEntries = await UserCtg.findAll({
+      where: { user_id: user_id },
+      include: [
+          {
+              model: Category,
+              attributes: ['name']
+          },
+          {
+              model: SubCategory,
+              attributes: ['name']
+          }
+        ]
+    });
 
-    // 카테고리 이름 조회
-    let ctgId = ctgIds.map(ctg => ctg.ctg_id);
-    const ctgNames = await Category.findAll({
-      attributes: ['b_ctg', 'name'],
-      where: {
-        id: ctgId
-      }
-    })
+    userEntries.forEach(entry => {
+      const name = entry.dataValues.subcategory_id ? entry.SubCategory.dataValues.name : entry.dataValues.value;
+      category[entry.Category.dataValues.name].push(name);
+    });
 
-    ctgNames.forEach(ctg => {
-      myCategory[ctg.b_ctg].push(ctg.name)
-    })
-
-    response['category'] = myCategory;
+    response['category'] = category;
 
     res.json(response);
   }catch(err){
