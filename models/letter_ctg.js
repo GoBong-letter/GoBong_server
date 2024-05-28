@@ -11,13 +11,25 @@ class LetterCtg extends Sequelize.Model {
                     key : 'id'
                 }
             },
-            ctg_id: {
+            category_id:{
                 type: DataTypes.INTEGER,
                 allowNull: false,
                 references:{
-                    model : 'category',
+                    model : 'categories',
                     key : 'id'
                 }
+            },
+            subcategory_id:{
+                type: DataTypes.INTEGER,
+                allowNull: true,
+                references:{
+                    model : 'sub_categories',
+                    key : 'id'
+                }
+            },
+            value: {
+                type: DataTypes.STRING,
+                allowNull: true,
             }
         }, {
             sequelize,
