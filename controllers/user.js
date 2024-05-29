@@ -111,7 +111,7 @@ exports.userInfoGetMind = async (req, res) => {
     let category = { '외모': [], '성격': [], '취미': [], '색': [], 'MBTI': [], '기타': []};
 
     // 나의 카테고리 id 조회
-    const userEntries = await UserCtg.findAll({
+    const userCategory = await UserCtg.findAll({
       where: { user_id: user_id },
       include: [
           {
@@ -125,7 +125,7 @@ exports.userInfoGetMind = async (req, res) => {
         ]
     });
 
-    userEntries.forEach(entry => {
+    userCategory.forEach(entry => {
       const name = entry.dataValues.subcategory_id ? entry.SubCategory.dataValues.name : entry.dataValues.value;
       category[entry.Category.dataValues.name].push(name);
     });
@@ -222,6 +222,7 @@ exports.categoryPatchMid = async (req, res) => {
   try{
     const { user_id, category } = req.body;
 
+    // 기존 카테고리 삭제
     await UserCtg.destroy({
       where: { 
         user_id: user_id 
