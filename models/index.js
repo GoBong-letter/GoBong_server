@@ -71,6 +71,10 @@ LetterCtg.belongsTo(Letter, { foreignKey: 'letter_id' });
 LetterCtg.belongsTo(Category, { foreignKey: 'category_id' });
 LetterCtg.belongsTo(SubCategory, { foreignKey: 'subcategory_id' });
 
+// letter와 letter_reply 관계 설정
+db.Letter.hasOne(db.LetterReply, { foreignKey: 'letter_id' });
+db.LetterReply.belongsTo(db.Letter, { foreignKey: 'letter_id' })
+
 // community와 community_comment 관계 설정
 db.Community.hasMany(db.CommunityComment, { foreignKey: 'post_id', sourceKey: 'id', as: 'comments' });
 db.CommunityComment.belongsTo(db.Community, { foreignKey: 'post_id', targetKey: 'id' });
