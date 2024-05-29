@@ -1,5 +1,5 @@
 const { Letter, LetterCtg, LetterReply, User, Category, SubCategory } = require('../models');
-const { Op, where } = require('sequelize');
+const { Sequelize, Op, where } = require('sequelize');
 const { startOfWeek, endOfWeek, differenceInWeeks } = require('date-fns');
 
 const getCategoryId = require('../helper/getCategoryId');
@@ -89,11 +89,18 @@ exports.randomLetterGetMid = async (req, res) => {
     try{
         let user_id = req.params.user_id;
 
-        // 내가 작성한 편지를 제외하여 조회하기
+        // 내가 작성한 편지, 이미 받은 편지를 제외하여 조회하기
         const letters = await Letter.findAll({
             where:{
-                user_id: { [Op.ne]: user_id }
-            }
+                user_id: {
+                    [Op.ne]: user_id // 자신이 작성한 편지가 아닌 경우
+                },
+                id: {
+                    [Op.notIn]: Sequelize.literal(
+                        '(SELECT letter_id FROM letter_reply)'  // letter_reply 테이블에 존재하지 않는 letter_id만 포함
+                    )
+                }
+            },
         })
 
         // 랜덤으로 다섯 개의 편지 반환
@@ -113,6 +120,19 @@ exports.randomLetterGetMid = async (req, res) => {
 // 편지 받기 (랜덤에서 뽑기)
 exports.receiveLetterPostMid = async (req, res) => {
     try{
+        const { letter_id } = req.body;
+
+        // 이미 받은 편지인지 검사
+        const existingReply = await LetterReply.findOne({
+            where: {
+              letter_id: letter_id
+            }
+        });
+      
+        if (existingReply) {
+            return res.status(409).json({ error: '이미 받은 편지입니다'})
+        }
+
         const result = await LetterReply.create({
             ...req.body
         });
@@ -154,14 +174,21 @@ exports.inboxGetMid = async (req, res) => {
 // 편지 답장하기
 exports.writeReplyPostMid = async (req, res) => {
     try{
-        const { letter_id, content } = req.body;
+        const { user_id, letter_id, content } = req.body;
         const letter = await LetterReply.update({
             content
         }, {
-            where: {letter_id: letter_id}
+            where: {
+                letter_id: letter_id,
+                user_id: user_id
+            }
         })
 
-        return res.status(200).json({ message: '답장 작성 성고' });
+        if(letter[0] === 0) {
+            return res.status(403).json({ message: '받지 않은 편지입니다.'})
+        }
+
+        return res.status(200).json({ message: '답장 작성 성공' });
     }catch(err){    
         console.error(err)
         return res.status(500).json({ error: "서버 오류로 편지 답장 실패" })
