@@ -1,4 +1,4 @@
-const { Letter, LetterCtg, LetterReply, User, Category } = require('../models');
+const { Letter, LetterCtg, LetterReply, User, Category, SubCategory } = require('../models');
 const { Op, where } = require('sequelize');
 const { startOfWeek, endOfWeek, differenceInWeeks } = require('date-fns');
 
@@ -288,25 +288,29 @@ exports.categoryGetMid = async(req, res) => {
     try{
         const letter_id = req.params.letter_id;
 
-        const letters = await LetterCtg.findAll({
-            attributes: ['ctg_id'],
-            where:{
-                letter_id: letter_id
+        let category = { '외모': [], '성격': [], '취미': [], '색': [], 'MBTI': [], '기타': []};
+
+        // 편지 카테고리 id 조회
+        const letterCategory = await LetterCtg.findAll({
+        where: { letter_id: letter_id },
+        include: [
+            {
+                model: Category,
+                attributes: ['name']
+            },
+            {
+                model: SubCategory,
+                attributes: ['name']
             }
-        })
+            ]
+        });
 
-        const ctgIds = letters.map(letter => letter.ctg_id);
+        letterCategory.forEach(entry => {
+            const name = entry.dataValues.subcategory_id ? entry.SubCategory.dataValues.name : entry.dataValues.value;
+            category[entry.Category.dataValues.name].push(name);
+        });
 
-        const ctgs = await Category.findAll({
-            attributes: ['name'],
-            where: {
-                id: ctgIds
-            }
-        })
-
-        const name = ctgs.map(ctg => ctg.name);
-
-        res.json(name)
+        res.json(category)
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: "서버 오류로 카테고리 조회 실패" })
