@@ -343,3 +343,30 @@ exports.categoryGetMid = async(req, res) => {
         return res.status(500).json({ error: "서버 오류로 카테고리 조회 실패" })
     }
 }
+
+exports.userLettersGetMid = async(req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        const letters = await Letter.findAll({
+            include: [{
+              model: LetterReply,
+              required: false,
+              where: {
+                user_id: user_id
+              }
+            }],
+            where: {
+              [Op.or]: [
+                { user_id: user_id },
+                { '$LetterReply.user_id$': user_id }
+              ]
+            }
+        });
+
+        res.json(letters);
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ error: "서버 오류로 편지 조회 실패"});
+    }
+}
