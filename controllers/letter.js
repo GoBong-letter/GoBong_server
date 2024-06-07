@@ -120,7 +120,18 @@ exports.randomLetterGetMid = async (req, res) => {
 // 편지 받기 (랜덤에서 뽑기)
 exports.receiveLetterPostMid = async (req, res) => {
     try{
-        const { letter_id } = req.body;
+        const { letter_id, user_id } = req.body;
+
+        // 내가 보낸 편지인지 검사
+        const myLetter = await Letter.findOne({
+            where: {
+                id: letter_id
+            }
+        })
+
+        if(myLetter.dataValues.user_id == user_id){
+            return res.status(409).json({ error: '사용자가 작성한 편지입니다.'})
+        }
 
         // 이미 받은 편지인지 검사
         const existingReply = await LetterReply.findOne({
@@ -348,23 +359,45 @@ exports.userLettersGetMid = async(req, res) => {
     try{
         const user_id = req.params.user_id;
 
-        const letters = await Letter.findAll({
-            include: [{
-              model: LetterReply,
-              required: false,
-              where: {
-                user_id: user_id
-              }
-            }],
+        // 내가 쓴 편지
+        const sentLetters = await Letter.findAll({
             where: {
-              [Op.or]: [
-                { user_id: user_id },
-                { '$LetterReply.user_id$': user_id }
-              ]
-            }
+                user_id: user_id
+            },
+            include: [{
+                model: LetterReply,
+                required: false
+            }]
         });
+    
+        // 내가 받은 편지
+        const receivedLetters = await Letter.findAll({
+            include: [{
+                model: LetterReply,
+                required: true,
+                where: {
+                    user_id: user_id
+                }
+            }]
+        });
+    
+        // 편지들을 순수 데이터 객체로 변환하고 send 필드를 추가
+        const processedSentLetters = sentLetters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = true;
+            return letterData;
+        });
+    
+        const processedReceivedLetters = receivedLetters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = false;
+            return letterData;
+        });
+    
+        // 두 배열 합치기
+        const allLetters = [...processedSentLetters, ...processedReceivedLetters];
 
-        res.json(letters);
+        res.json(allLetters);
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: "서버 오류로 편지 조회 실패"});
