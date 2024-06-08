@@ -403,3 +403,62 @@ exports.userLettersGetMid = async(req, res) => {
         return res.status(500).json({ error: "서버 오류로 편지 조회 실패"});
     }
 }
+
+exports.searchLetterGetMid = async(req, res) => {
+    try{
+        const user_id = req.params.user_id;
+        const words = req.params.words;
+
+        // 내가 쓴 편지
+        const sentLetters = await Letter.findAll({
+            where: {
+                user_id: user_id,
+                [Op.or]: [
+                    { title: { [Op.like]: `%${words}%` } },
+                    { content: { [Op.like]: `%${words}%` } },
+                ],
+            },
+            include: [{
+                model: LetterReply,
+                required: false
+            }]
+        });
+    
+        // 내가 받은 편지
+        const receivedLetters = await Letter.findAll({
+            where: {
+                [Op.or]: [
+                    { title: { [Op.like]: `%${words}%` } },
+                    { content: { [Op.like]: `%${words}%` } },
+                ],
+            },
+            include: [{
+                model: LetterReply,
+                required: true,
+                where: {
+                    user_id: user_id
+                }
+            }]
+        });
+    
+        // 편지들을 순수 데이터 객체로 변환하고 send 필드를 추가
+        const processedSentLetters = sentLetters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = true;
+            return letterData;
+        });
+    
+        const processedReceivedLetters = receivedLetters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = false;
+            return letterData;
+        });
+    
+        // 두 배열 합치기
+        const allLetters = [...processedSentLetters, ...processedReceivedLetters];
+
+        res.json(allLetters);
+    }catch(error){
+        console.log(error);
+    }
+}
