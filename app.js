@@ -23,10 +23,6 @@ sequelize.sync({force: false})
 app.use(cors());
 app.use(express.json());
 
-app.use('/', (req, res) => {
-    res.send('성공! 성공!')
-})
-
 const users = require('./routes/user');
 app.use('/users', users);
 
