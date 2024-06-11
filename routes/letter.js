@@ -15,5 +15,6 @@ router.get('/average-per-week/:user_id', lettersMiddleware.weekAvgLettersGetMid)
 router.get('/category/:letter_id', lettersMiddleware.categoryGetMid) // 편지 카테고리 조회
 router.get('/users/:user_id', lettersMiddleware.userLettersGetMid); // 내가 쓰거나 받은 편지 조회
 router.get('/search/:user_id/:words', lettersMiddleware.searchLetterGetMid) // 편지 검색
+router.get('/count/all', lettersMiddleware.lettersCntGetMid) // 모든 편지 개수 조회
 
 module.exports = router;

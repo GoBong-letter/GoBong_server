@@ -355,6 +355,7 @@ exports.categoryGetMid = async(req, res) => {
     }
 }
 
+// 내가 쓰거나 받은 편지 조회
 exports.userLettersGetMid = async(req, res) => {
     try{
         const user_id = req.params.user_id;
@@ -404,6 +405,7 @@ exports.userLettersGetMid = async(req, res) => {
     }
 }
 
+// 편지 검색
 exports.searchLetterGetMid = async(req, res) => {
     try{
         const user_id = req.params.user_id;
@@ -460,5 +462,17 @@ exports.searchLetterGetMid = async(req, res) => {
         res.json(allLetters);
     }catch(error){
         console.log(error);
+    }
+}
+
+// 모든 편지 개수 조회
+exports.lettersCntGetMid = async(req, res) => {
+    try{
+        const count = await Letter.count();
+
+        res.json({ "count": count })
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ error: "서버 오류로 편지 개수 조회 실패" })
     }
 }
