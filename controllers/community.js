@@ -33,16 +33,22 @@ exports.allPostGetMid = async (req, res) => {
     try{
         const posts = await Community.findAll({
             attributes: ['id', 'title', 'content', 'createdAt'],
-            include: [{
-                model: CommunityComment,
-                as: "comments",
-                attributes: ['content'],
-                include: [{
+            include: [
+                {
+                    model: CommunityComment,
+                    as: "comments",
+                    attributes: ['content'],
+                    include: [{
+                        model: User,
+                        as: 'user',
+                        attributes: ['nickname'] 
+                    }]
+                },
+                {
                     model: User,
-                    as: 'user',
-                    attributes: ['nickname'] 
-                }]
-            }]
+                    attributes: ['nickname', 'image']
+                }
+            ]
         });
         
         res.json(posts)
@@ -85,16 +91,22 @@ exports.postGetMid = async (req, res) => {
         const post = await Community.findOne({
             attributes: ['id', 'title', 'content', 'createdAt'],
             where: { id: post_id },
-            include: [{
-                model: CommunityComment,
-                as: "comments",
-                attributes: [ 'content'],
-                include: [{
+            include: [
+                {
+                    model: CommunityComment,
+                    as: "comments",
+                    attributes: [ 'content'],
+                    include: [{
+                        model: User,
+                        as: 'user',
+                        attributes: ['nickname'] 
+                    }]
+                },
+                {
                     model: User,
-                    as: 'user',
-                    attributes: ['nickname'] 
-                }]
-            }]
+                    attributes: ['nickname', 'image']
+                }
+            ]
         });
 
         
