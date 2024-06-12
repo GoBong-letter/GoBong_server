@@ -53,9 +53,15 @@ CommunityComment.init(sequelize);
 Category.hasMany(SubCategory, { foreignKey: 'category_id' });
 SubCategory.belongsTo(Category, { foreignKey: 'category_id' });
 
-// user와 category 다대다(user_ctg) 관계 설정
-User.belongsToMany(Category, { through: UserCtg, foreignKey: 'user_id' });
-Category.belongsToMany(User, { through: UserCtg, foreignKey: 'category_id' });
+// user와 category 관계 설정
+User.hasMany(UserCtg, {foreignKey : "user_id", sourceKey:"id"})
+UserCtg.belongsTo(User, {foreignKey: "user_id", sourceKey: "id"})
+
+Category.hasMany(UserCtg, {foreignKey : "category_id", sourceKey:"id"})
+UserCtg.belongsTo(Category, {foreignKey: "category_id", sourceKey: "id"})
+
+SubCategory.hasMany(UserCtg, {foreignKey : "subcategory_id", sourceKey:"id"})
+UserCtg.belongsTo(SubCategory, {foreignKey: "subcategory_id", sourceKey: "id"})
 
 // user_ctg와 user, category, sub_category 관계 설정
 UserCtg.belongsTo(User, { foreignKey: 'user_id' });
@@ -63,8 +69,14 @@ UserCtg.belongsTo(Category, { foreignKey: 'category_id' });
 UserCtg.belongsTo(SubCategory, { foreignKey: 'subcategory_id' });
 
 // letter와 category 다대다(letter_ctg) 관계 설정
-Letter.belongsToMany(Category, { through: LetterCtg, foreignKey: 'letter_id' });
-Category.belongsToMany(Letter, { through: LetterCtg, foreignKey: 'category_id' });
+Letter.hasMany(LetterCtg, {foreignKey : "letter_id", sourceKey:"id"})
+LetterCtg.belongsTo(Letter, {foreignKey: "letter_id", sourceKey: "id"})
+
+Category.hasMany(LetterCtg, {foreignKey : "category_id", sourceKey:"id"})
+LetterCtg.belongsTo(Category, {foreignKey: "category_id", sourceKey: "id"})
+
+SubCategory.hasMany(LetterCtg, {foreignKey : "subcategory_id", sourceKey:"id"})
+LetterCtg.belongsTo(SubCategory, {foreignKey: "subcategory_id", sourceKey: "id"})
 
 // letter_ctg와 letter, category, sub_category 관계 설정
 LetterCtg.belongsTo(Letter, { foreignKey: 'letter_id' });
