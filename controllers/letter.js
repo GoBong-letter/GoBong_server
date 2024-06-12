@@ -291,27 +291,22 @@ exports.weekLettersGetMid = async (req, res) => {
 // 주 별 평균 편지 작성 개수 조회
 exports.weekAvgLettersGetMid = async (req, res) => {
     try{
-        const user_id = req.params.user_id;
 
-        const user = await User.findOne({
-            attributes: ['createdAt'],
-            where: {
-                id: user_id
-            }
-        })
+        // 이번주의 시작과 끝 날짜 계산
+        const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
+        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 });
 
-        // 계정 생성 후 몇 주 지났는지 구하기
-        const now = new Date();
-        const weeksSinceCreation = differenceInWeeks(now, user.dataValues.createdAt) + 1;
-        console.log(weeksSinceCreation, "createdAt!!!!!!!!");
-
+        // 이번주에 작성한 편지 개수 조회
         const letters = await Letter.count({
-            where: {
-                user_id: user_id,
+            where:{
+                createdAt: { [Op.between]: [startOfThisWeek, endOfThisWeek] }
             }
         })
 
-        const avg = Math.round(letters / weeksSinceCreation);
+        // 총 유저 수
+        const users = await User.count({})
+
+        const avg = Math.round(letters / users);
         const response = { "letters_avg" : avg };
 
         res.json(response);

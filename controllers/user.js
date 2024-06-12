@@ -1,5 +1,5 @@
-const { User, UserCtg, Card, Letter, Category, SubCategory } = require('../models');
-const { Op, where } = require('sequelize');
+const { User, UserCtg, Card, Letter, Category, SubCategory, sequelize } = require('../models');
+const { Op } = require('sequelize');
 const getCategoryId = require('../helper/getCategoryId');
 const crypto = require('crypto');
 
@@ -151,7 +151,7 @@ exports.cardsGetMid = async (req, res) => {
       }
     })
 
-    // 받을 수 있는 편지 조회
+    // 받을 수 있는 카드 조회
     let cards = await Card.findAll({
       attributes: ['name'],
       where:{
@@ -160,8 +160,28 @@ exports.cardsGetMid = async (req, res) => {
       order: [ ['count', 'ASC'] ]
     })
 
+    let nextCard = null;
+    
+    if(letters < 500){
+      // 다음 카드를 받을 수 있는 조건 조회
+      nextCard = await Card.findOne({
+        attributes: ['count'],
+        where:{
+          count: {[Op.gt]: letters}
+        }
+      })
+
+      nextCard = nextCard.dataValues.count
+    }
+    
     let myCards = cards.map(card => card.dataValues.name);
-    res.json(myCards);
+
+    const response = {
+      myCards,
+      'needCard': nextCard - letters
+    }
+
+    res.json(response);
   }catch(err){
     console.error(err);
     return res.status(500).json({ error: '서버 오류로 카드 조회 실패' })
