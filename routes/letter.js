@@ -11,7 +11,7 @@ router.post('/reply', lettersMiddleware.writeReplyPostMid); // 편지 답장하�
 router.get('/replies/sent/:user_id', lettersMiddleware.sentLetterGetMid); // 답장한 편지 조회
 router.get('/replies/received/:user_id', lettersMiddleware.receivedLetterGetMid); // 답장받은 편지 조회
 router.get('/this-week/:user_id', lettersMiddleware.weekLettersGetMid); // 이번주에 작성한 편지 개수 조회
-router.get('/average-per-week/:user_id', lettersMiddleware.weekAvgLettersGetMid); // 주 별 평균 편지 작성 개수 조회
+router.get('/average-per-week/all', lettersMiddleware.weekAvgLettersGetMid); // 주 별 평균 편지 작성 개수 조회
 router.get('/category/:letter_id', lettersMiddleware.categoryGetMid) // 편지 카테고리 조회
 router.get('/users/:user_id', lettersMiddleware.userLettersGetMid); // 내가 쓰거나 받은 편지 조회
 router.get('/search/:user_id/:words', lettersMiddleware.searchLetterGetMid) // 편지 검색
