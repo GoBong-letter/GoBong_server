@@ -83,4 +83,8 @@ db.CommunityComment.belongsTo(db.Community, { foreignKey: 'post_id', targetKey: 
 db.CommunityComment.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'id', as: 'user' });
 db.User.hasMany(db.CommunityComment, { foreignKey: 'user_id', sourceKey: 'id' });
 
+// community와 user 관계 설정
+db.Community.belongsTo(db.User, { foreignKey: 'user_id', targetKey: 'id'});
+db.User.hasMany(db.Community, { foreignKey: 'user_id', sourceKey: 'id' });
+
 module.exports = db;
