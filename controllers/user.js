@@ -43,7 +43,8 @@ exports.signupPostMid = async (req, res) => {
             password: hashedPassword,
             salt,
             email,
-            image
+            image,
+            receivedCard: '[]'
         })
 
         // 카테고리 저장
@@ -176,8 +177,36 @@ exports.cardsGetMid = async (req, res) => {
     
     let myCards = cards.map(card => card.dataValues.name);
 
+    // 이미 받은 카드 조회
+    let prevCards = await User.findOne({
+      attributes: ['receivedCard'],
+      where: {
+        id: user_id
+      }
+    })
+    
+    let jsonPrevCards = JSON.parse(prevCards.dataValues.receivedCard);
+    let newCard = [];
+
+    myCards.forEach(card => {
+      if(!jsonPrevCards.includes(card)){
+        newCard.push(card);
+      }
+    })
+
+    const updateCard = User.update({
+        receivedCard: JSON.stringify(jsonPrevCards.concat(newCard))
+      },{
+        where: {
+          id: user_id
+        }
+      }
+    )
+
+    // 내가 받을 수 있는 카드, 다음카드까지 남은 편지 개수, 새로 받은 편지
     const response = {
       myCards,
+      newCard,
       'needCard': nextCard - letters
     }
 
