@@ -1,6 +1,6 @@
 const { Letter, LetterCtg, LetterReply, User, Category, SubCategory } = require('../models');
 const { Sequelize, Op, where } = require('sequelize');
-const { startOfWeek, endOfWeek, differenceInWeeks } = require('date-fns');
+const { startOfWeek, endOfWeek, subWeeks } = require('date-fns');
 
 const getCategoryId = require('../helper/getCategoryId');
 const getRandomIndex = require('../helper/getRandomIndex');
@@ -268,8 +268,8 @@ exports.weekLettersGetMid = async (req, res) => {
         const user_id = req.params.user_id;
 
         // 이번주의 시작과 끝 날짜 계산
-        const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
-        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 });
+        const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }).toLocaleString('sv');
+        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 }).toLocaleString('sv');
 
         // 이번주에 작성한 편지 개수 조회
         const letters = await Letter.count({
@@ -293,8 +293,8 @@ exports.weekAvgLettersGetMid = async (req, res) => {
     try{
 
         // 이번주의 시작과 끝 날짜 계산
-        const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 });
-        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 });
+        const startOfThisWeek = startOfWeek(new Date(), { weekStartsOn: 1 }).toLocaleString('sv');
+        const endOfThisWeek = endOfWeek(new Date(), { weekStartsOn: 1 }).toLocaleString('sv');
 
         // 이번주에 작성한 편지 개수 조회
         const letters = await Letter.count({
@@ -469,5 +469,44 @@ exports.lettersCntGetMid = async(req, res) => {
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: "서버 오류로 편지 개수 조회 실패" })
+    }
+}
+
+// 저번주와 편지 개수 비교
+exports.comparisonLetterGetMid = async (req, res) => {
+    try{
+        const user_id = req.params.user_id;
+
+        // 현재 날짜
+        const now = new Date();
+
+        // 이번주의 시작과 끝 날짜
+        const startOfThisWeek = startOfWeek(now, { weekStartsOn: 1 }).toLocaleString('sv');
+        const endOfThisWeek = endOfWeek(now, { weekStartsOn: 1 }).toLocaleString('sv');
+
+        // 저번주의 시작과 끝 날짜
+        const startOfLastWeek = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }).toLocaleString('sv');
+        const endOfLastWeek = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 }).toLocaleString('sv');
+
+        // 저번주에 작성한 편지 개수
+        const lastWeekletters = await Letter.count({
+            where:{
+                user_id: user_id,
+                createdAt: { [Op.between]: [startOfLastWeek, endOfLastWeek] }
+            }
+        })
+
+        // 이번주에 작성한 편지 개수
+        const thisWeekletters = await Letter.count({
+            where:{
+                user_id: user_id,
+                createdAt: { [Op.between]: [startOfThisWeek, endOfThisWeek] }
+            }
+        })
+
+        res.json({ "letters": thisWeekletters - lastWeekletters});
+    }catch(err){
+        console.error(err);
+        return res.status(500).json({ error: "서버 오류로 편지 개수 비교 실패" })
     }
 }
