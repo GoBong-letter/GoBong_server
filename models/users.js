@@ -29,7 +29,12 @@ class User extends Sequelize.Model {
             },
             image: {
                 type: DataTypes.ENUM,
-                values: ['chajo', 'rice', 'black', 'bean', 'multi_grain']
+                values: ['chajo', 'rice', 'black', 'bean', 'multi_grain'],
+                allowNull: false
+            }, 
+            receivedCard: {
+                type: DataTypes.STRING,
+                allowNull: false
             }
         }, {
             sequelize,
