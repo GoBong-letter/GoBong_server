@@ -129,6 +129,12 @@ exports.receiveLetterPostMid = async (req, res) => {
             }
         })
 
+        // 해당 편지가 없는 경우
+        if(myLetter === null) {
+            return res.status(400).json({ error: '존재하지 않는 편지입니다.'})
+        }
+
+        // 내가 작성한 편지인 경우
         if(myLetter.dataValues.user_id == user_id){
             return res.status(409).json({ error: '사용자가 작성한 편지입니다.'})
         }
