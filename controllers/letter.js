@@ -252,7 +252,10 @@ exports.receivedLetterGetMid = async (req, res) => {
             where:{
                 letter_id: letterIds,
                 content: { [Op.ne]: null }
-            }
+            },
+            include: [{
+                model: Letter
+            }]
         })
 
         res.json(letterReplies);
