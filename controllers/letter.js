@@ -42,10 +42,19 @@ exports.myLettersGetMid = async (req, res) => {
         const userLetters = await Letter.findAll({
             where: {
                 user_id
-            }
+            },
+            include: [{
+                model: LetterReply
+            }]
         });
+
+        const resLetters = userLetters.map(letter => {
+            const letterData = letter.get({ plain: true});
+            letterData.send = true;
+            return letterData;
+        })
       
-        res.json(userLetters);
+        res.json(resLetters);
     } catch (err) {
       console.error(err);
       return res.status(500).json({ error: '서버 오류로 나의 편지 조회 실패' });
@@ -59,25 +68,18 @@ exports.letterGetMid = async (req, res) => {
         const letter = await Letter.findOne({
             where: {
                 id: letter_id
-            }
+            },
+            include: [{
+                model: LetterReply,
+                attributes: ['content']
+            }]
         })
 
-        const reply = await LetterReply.findOne({
-            where:{
-                letter_id: letter_id
-            }
-        })
- 
-        let response = {...letter.dataValues}
-        
-        // response 객체에 답장 추가
-        if(reply){
-            response.reply = reply.dataValues.content
-        }else{
-            response.reply = null
+        if(letter === null){
+            return res.status(400).json({ error: '해당 편지가 존재하지 않습니다'})
         }
 
-        res.json(response)
+        res.json(letter)
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: '서버 오류로 편지 조회 실패'})
@@ -179,9 +181,18 @@ exports.inboxGetMid = async (req, res) => {
             where: {
               id: letterIds,
             },
-          });
+            include: [{
+                model: LetterReply
+            }]
+        });
 
-        res.json(letters);
+        const resLetters = letters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = false;
+            return letterData;
+        });
+
+        res.json(resLetters);
     }catch(err){
         console.error(err)
         return res.status(500).json({ error: "서버 오류로 편지 조회 실패" })
@@ -231,9 +242,18 @@ exports.sentLetterGetMid = async (req, res) => {
             where: {
               id: letterIds
             },
-          });
+            include: [{
+                model: LetterReply
+            }]
+        });
 
-        res.json(letters);
+        const resLetters = letters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = false;
+            return letterData;
+        });
+
+        res.json(resLetters);
     }catch(err){
         console.error(err);
         return res.status(500).json({ error: "서버 오류로 답장한 편지 조회 실패" });
@@ -246,25 +266,24 @@ exports.receivedLetterGetMid = async (req, res) => {
         const user_id = req.params.user_id;
 
         const letters = await Letter.findAll({
-            attributes: ['id'],
             where: {
                 user_id: user_id
-            }
-        })
-
-        const letterIds = letters.map(letter => letter.id);
-
-        const letterReplies = await LetterReply.findAll({
-            where:{
-                letter_id: letterIds,
-                content: { [Op.ne]: null }
             },
             include: [{
-                model: Letter
+                model: LetterReply,
+                where: {
+                    content: { [Op.ne]: null }
+                }
             }]
         })
 
-        res.json(letterReplies);
+        const resLetters = letters.map(letter => {
+            const letterData = letter.get({ plain: true });
+            letterData.send = true;
+            return letterData;
+        })
+
+        res.json(resLetters);
     }catch(err){
         console.error(err);
         return res.status(500).json({ error : "서버 오류로 답장 받은 편지 조회 실패" })
