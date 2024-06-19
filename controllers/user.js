@@ -248,7 +248,7 @@ exports.nicknamePatchMid = async (req, res) => {
         },
       });
 
-      if(checkNickname){
+      if(checkNickname && checkNickname.dataValues.id != user_id){
         return res.status(409).json({ error: '이미 존재하는 닉네임입니다.' });
       }
 
